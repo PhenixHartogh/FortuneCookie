@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Snack Fortune Cookie</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+:root {
+  --bg: #fff4e6;
+  --accent: #ff9f1c;
+  --accent-dark: #e68a00;
+  --card: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #fff1dc, #ffe0b3);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.app {
+  background: var(--card);
+  max-width: 440px;
+  width: 100%;
+  padding: 26px;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+h1 {
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 16px 0;
+  font-size: 1rem;
+  border-radius: 12px;
+  border: 2px solid #eee;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-dark);
+}
+
+.cookie {
+  font-size: 4.5rem;
+  margin: 20px 0;
+  transition: transform 0.3s ease;
+}
+
+.cookie.crack {
+  transform: rotate(-15deg) scale(1.15);
+}
+
+.fortune {
+  display: none;
+  background: #fff7eb;
+  padding: 16px;
+  border-radius: 14px;
+  border-left: 6px solid var(--accent);
+  margin-top: 16px;
+}
+
+.share {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.share button {
+  flex: 1;
+  font-size: 0.85rem;
+  padding: 10px;
+}
+
+.rarity {
+  margin-top: 8px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+}
+
+.common { color: #666; }
+.uncommon { color: #2e8b57; }
+.rare { color: #1e90ff; }
+.legendary { color: #ff8c00; text-shadow: 0 0 6px rgba(255,140,0,0.6); }
+.mythic {
+  color: #c026d3;
+  text-shadow: 0 0 6px rgba(192,38,211,0.8), 0 0 12px rgba(192,38,211,0.6);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+footer {
+  margin-top: 18px;
+  font-size: 0.75rem;
+  color: #888;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <h1>🥠 Snack Fortune Cookie</h1>
+  <p class="subtitle">Your snack determines your destiny.</p>
+
+  <input id="snackInput" placeholder="Your favorite snack..." />
+  <button onclick="crackCookie()">Crack the Cookie</button>
+
+  <div id="cookie" class="cookie">🥠</div>
+
+  <div id="fortuneBox" class="fortune">
+    <p id="fortuneText"></p>
+    <div id="rarityLabel" class="rarity"></div>
+    <div class="share">
+      <button onclick="shareTwitter()">X</button>
+      <button onclick="shareFacebook()">Facebook</button>
+      <button onclick="copyLink()">Copy Link</button>
+    </div>
+  </div>
+
+  <footer>Powered by snacks & destiny</footer>
+</div>
+
+<!-- tiny crack sound -->
+<audio id="crackSound">
+  <source src="data:audio/wav;base64,UklGRqQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YYAAAAD///8AAP//AAD//wAA//8AAP//AAD//wAA" type="audio/wav">
+</audio>
+
+<script>
+
+const rarityTable = [
+  { name: "Common", chance: 60, class: "common" },
+  { name: "Uncommon", chance: 25, class: "uncommon" },
+  { name: "Rare", chance: 10, class: "rare" },
+  { name: "Legendary", chance: 4, class: "legendary" },
+  { name: "Mythic", chance: 1, class: "mythic" }
+];
+
+function rollRarity() {
+  const roll = Math.random() * 100;
+  let cumulative = 0;
+  for (let r of rarityTable) {
+    cumulative += r.chance;
+    if (roll <= cumulative) return r;
+  }
+  return rarityTable[0];
+}
+
+const verbs = [
+  "accidentally invent", "become banned from", "found a cult around",
+  "declare war using", "monetize", "ruin Thanksgiving with",
+  "get famous for", "disappear while researching",
+  "write a manifesto about", "get cancelled over"
+];
+
+const roles = [
+  "snack influencer", "underground legend", "government consultant",
+  "disgraced billionaire", "snack philosopher",
+  "talk show guest", "folk hero", "internet mystery"
+];
+
+const outcomes = [
+  "a reality TV show", "a startup", "a museum",
+  "an underground movement", "a conspiracy theory",
+  "an international incident", "a holiday",
+  "a podcast no one asked for"
+];
+
+const twists = [
+  "but legally cannot explain why",
+  "and regret nothing",
+  "and the documentary wins awards",
+  "before fleeing the country",
+  "until historians argue about it",
+  "and it changes snack law forever",
+  "but only at 3am",
+  "while everyone pretends it's normal"
+];
+
+const lifePaths = [];
+for (let v of verbs) {
+  for (let r of roles) {
+    for (let o of outcomes) {
+      lifePaths.push(
+        `You will ${v} ${o} after becoming a ${r} because of {snack}, ${twists[Math.floor(Math.random()*twists.length)]}.`
+      );
+    }
+  }
+}
+
+function crackCookie() {
+  const snack = document.getElementById("snackInput").value.trim();
+  if (!snack) return alert("Enter a snack 🍿");
+
+  const cookie = document.getElementById("cookie");
+  const sound = document.getElementById("crackSound");
+  const fortuneBox = document.getElementById("fortuneBox");
+  const fortuneText = document.getElementById("fortuneText");
+  const rarityLabel = document.getElementById("rarityLabel");
+
+  cookie.classList.remove("crack");
+  void cookie.offsetWidth;
+  cookie.classList.add("crack");
+  sound.currentTime = 0;
+  sound.play();
+
+  const rarity = rollRarity();
+  const fortune = lifePaths[Math.floor(Math.random() * lifePaths.length)];
+
+  const finalFortune = fortune.replace("{snack}", `<strong>${snack}</strong>`);
+  fortuneText.innerHTML = finalFortune;
+
+  rarityLabel.textContent = rarity.name + " Destiny";
+  rarityLabel.className = "rarity " + rarity.class;
+
+  fortuneBox.style.display = "block";
+
+  updateURL(snack, fortune, rarity.name);
+}
+
+function updateURL(snack, fortune, rarity) {
+  const params = new URLSearchParams({
+    snack,
+    fortune,
+    rarity
+  });
+  history.replaceState(null, "", "?" + params.toString());
+}
+
+function shareTwitter() {
+  const text = document.getElementById("fortuneText").innerText;
+  window.open(
+    `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+    "_blank"
+  );
+}
+
+function shareFacebook() {
+  window.open(
+    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.href)}`,
+    "_blank"
+  );
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(location.href);
+  alert("Link copied 🍪");
+}
+
+const params = new URLSearchParams(location.search);
+if (params.get("snack") && params.get("fortune")) {
+  document.getElementById("snackInput").value = params.get("snack");
+  document.getElementById("fortuneText").innerHTML =
+    params.get("fortune").replace("{snack}", `<strong>${params.get("snack")}</strong>`);
+  document.getElementById("rarityLabel").textContent =
+    (params.get("rarity") || "Common") + " Destiny";
+  document.getElementById("fortuneBox").style.display = "block";
+}
+</script>
+</body>
+</html>
